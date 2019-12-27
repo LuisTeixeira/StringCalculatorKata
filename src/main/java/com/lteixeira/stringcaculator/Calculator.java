@@ -12,32 +12,9 @@ public class Calculator {
         List<String> delimiters = parseDelimiters(expression);
         expression = cleanDelimiterLine(expression);
         if (expression.length() > 0) {
-            List<String> tokenDelimiters = new ArrayList<>();
-            tokenDelimiters.add(expression);
-            for (String delimiter : delimiters) {
-                List<String> tmp = new ArrayList<>();
-                for (String token : tokenDelimiters) {
-                    tmp.addAll(Arrays.asList(token.split(Pattern.quote(delimiter))));
-                }
-                tokenDelimiters = tmp;
-            }
-            List<String> tokens = new ArrayList<>();
-            tokenDelimiters.forEach(tc -> tokens.addAll(Arrays.asList(tc.split("\n"))));
-            if (tokens.size() > 1) {
-                List<Integer> negatives = new ArrayList<>();
-                for(String token : tokens) {
-                    Integer number = Integer.parseInt(token);
-                    if (number < 0) {
-                        negatives.add(number);
-                    }
-                    if (number > 1000) {
-                        continue;
-                    }
-                    result += number;
-                }
-                if (negatives.size() > 0) {
-                    throwNegativeException(negatives);
-                }
+            List<String> numbers = splitNumbers(delimiters, expression);
+            if (numbers.size() > 1) {
+                result = sumNumbers(numbers);
             } else {
                 result = Integer.parseInt(expression);
             }
@@ -45,17 +22,37 @@ public class Calculator {
         return result;
     }
 
-    private String parseDelimiter(String expression) {
-        String[] tokens = expression.split("\n");
-        if (tokens[0].startsWith("//")) {
-            int start = tokens[0].indexOf("[");
-            int end = tokens[0].indexOf("]");
-            if(start < 0) {
-                return tokens[0].substring(2);
+    private int sumNumbers(List<String> numbers) {
+        int result = 0;
+        List<Integer> negatives = new ArrayList<>();
+        for(String numberString : numbers) {
+            Integer number = Integer.parseInt(numberString);
+            if (number < 0) {
+                negatives.add(number);
             }
-            return tokens[0].substring(start + 1, end);
+            if (number > 1000) {
+                continue;
+            }
+            result += number;
         }
-        return ",";
+        if (negatives.size() > 0) {
+            throwNegativeException(negatives);
+        }
+        return result;
+    }
+
+    private List<String> splitNumbers(List<String> delimiters, String expression) {
+        delimiters.add("\n");
+        List<String> tokenDelimiters = new ArrayList<>();
+        tokenDelimiters.add(expression);
+        for (String delimiter : delimiters) {
+            List<String> tmp = new ArrayList<>();
+            for (String token : tokenDelimiters) {
+                tmp.addAll(Arrays.asList(token.split(Pattern.quote(delimiter))));
+            }
+            tokenDelimiters = tmp;
+        }
+        return tokenDelimiters;
     }
 
     private List<String> parseDelimiters(String expression) {
